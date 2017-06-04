@@ -1,108 +1,45 @@
 package controllers
 
-import java.net.URL
 import javax.inject._
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.stream.Materializer
-import akka.stream.scaladsl.{BroadcastHub, Flow, Keep, MergeHub, Source}
+import dao.DAO
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-/**
- * A very simple chat client using websockets.
- */
 @Singleton
 class HomeController @Inject()(implicit actorSystem: ActorSystem,
                                mat: Materializer,
-                               executionContext: ExecutionContext)
+                               executionContext: ExecutionContext,
+                               @Named("appDAO") dao: DAO)
   extends Controller {
 
-  private type WSMessage = String
-
-  private val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-
-  private implicit val logging = Logging(actorSystem.eventStream, logger.getName)
-
-  // chat room many clients -> merge hub -> broadcasthub -> many clients
-  private val (chatSink, chatSource) = {
-
-    // Don't log MergeHub$ProducerFailed as error if the client disconnects.
-    // recoverWithRetries -1 is essentially "recoverWith"
-    val source = MergeHub.source[WSMessage]
-      .log("source")
-      .recoverWithRetries(-1, { case _: Exception ⇒ Source.empty })
-
-    val sink = BroadcastHub.sink[WSMessage]
-    source.toMat(sink)(Keep.both).run()
-  }
-
-  private val userFlow: Flow[WSMessage, WSMessage, _] = {
-     Flow.fromSinkAndSource(chatSink, chatSource).log("userFlow")
-  }
-
   def index: Action[AnyContent] = Action { implicit request =>
-    val url = routes.HomeController.chat().webSocketURL()
-    Ok(views.html.chat(url))
+    Ok(views.html.index())
   }
 
-  def chat: WebSocket = {
-    WebSocket.acceptOrResult[WSMessage, WSMessage] {
-      case rh if sameOriginCheck(rh) =>
-        Future.successful(userFlow).map { flow =>
-          Right(flow)
-        }.recover {
-          case e: Exception =>
-            val msg = "Cannot create websocket"
-            logger.error(msg, e)
-            val result = InternalServerError(msg)
-            Left(result)
-        }
+  def query(query: String): Action[AnyContent] = Action { implicit request =>
 
-      case rejected =>
-        logger.error(s"Request ${rejected} failed same origin check")
-        Future.successful {
-          Left(Forbidden("forbidden"))
-        }
-    }
+    /**
+      * Query Option will ask the user for the country name or code and print the airports & runways at each airport.
+      * The input can be country code or country name.
+      * For bonus points make the test partial/fuzzy. e.g. entering zimb will result in Zimbabwe :)
+      */
+    Ok(views.html.query())
   }
 
-  /**
-   * Checks that the WebSocket comes from the same origin.  This is necessary to protect
-   * against Cross-Site WebSocket Hijacking as WebSocket does not implement Same Origin Policy.
-   *
-   * See https://tools.ietf.org/html/rfc6455#section-1.3 and
-   * http://blog.dewhurstsecurity.com/2013/08/30/security-testing-html5-websockets.html
-   */
-  private def sameOriginCheck(rh: RequestHeader): Boolean = {
-    rh.headers.get("Origin") match {
-      case Some(originValue) if originMatches(originValue) =>
-        logger.debug(s"originCheck: originValue = $originValue")
-        true
+  def reports: Action[AnyContent] = Action { implicit request =>
 
-      case Some(badOrigin) =>
-        logger.error(s"originCheck: rejecting request because Origin header value ${badOrigin} is not in the same origin")
-        false
-
-      case None =>
-        logger.error("originCheck: rejecting request because no Origin header found")
-        false
-    }
-  }
-
-  /**
-   * Returns true if the value of the Origin header contains an acceptable value.
-   */
-  private def originMatches(origin: String): Boolean = {
-    try {
-      val url = new URL(origin)
-      url.getHost == "localhost" &&
-        (url.getPort match { case 9000 | 19001 => true; case _ => false })
-    } catch {
-      case e: Exception => false
-    }
+    /**
+      * 10 countries with highest number of airports (with count) and countries with lowest number of airports.
+      *
+      * Type of runways (as indicated in "surface" column) per country
+      *
+      * Bonus: Print the top 10 most common runway identifications (indicated in "le_ident" column)
+      */
+    Ok(views.html.reports())
   }
 
 }

@@ -13,6 +13,8 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0
 libraryDependencies += "org.webjars" % "flot" % "0.8.3"
 libraryDependencies += "org.webjars" % "bootstrap" % "3.3.7"
 
+libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.0"
+
 lazy val akkaVersion = "2.4.11"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-core" % akkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion
