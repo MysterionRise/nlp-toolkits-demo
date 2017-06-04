@@ -1,6 +1,6 @@
 package module
 
-import com.google.inject.{AbstractModule, Provides}
+import com.google.inject.AbstractModule
 import dao.{CsvDAO, DAO}
 import net.codingwell.scalaguice.ScalaModule
 

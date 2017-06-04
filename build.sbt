@@ -15,6 +15,8 @@ libraryDependencies += "org.webjars" % "bootstrap" % "3.3.7"
 
 libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.0"
 
+libraryDependencies += "com.adrianhurt" %% "play-bootstrap" % "1.1-P25-B3"
+
 lazy val akkaVersion = "2.4.11"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-core" % akkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion
