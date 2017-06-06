@@ -20,8 +20,11 @@ package model
   * "he_longitude_deg"
   * "he_elevation_ft"
   * "he_heading_degT"
-  * "he_displaced_threshold_ft"
+  * "he_displaced_threshold_ft"*
   */
-class Runaway {
+case class Runaway(id: Int, airportRef: Int, airportIdent: String, length: Int, width: Int, surface: String,
+                   lighted: Boolean, closed: Boolean, leIdent: String, leLat: Double, leLon: Double,
+                   leElevation: Int, leHeading: Double, leDisplacedThreshold: Int, heIdent: String,
+                   heLat: Double, heLon: Double, heElevation: Int, heHeading: Double, heDisplacedThreshold: Int) {
 
 }

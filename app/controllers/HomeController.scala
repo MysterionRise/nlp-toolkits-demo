@@ -10,13 +10,13 @@ import forms.QueryForm
 import play.api.i18n.{I18nSupport, MessagesApi}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class HomeController @Inject()(
                                 val messagesApi: MessagesApi,
                                 implicit val actorSystem: ActorSystem,
                                 mat: Materializer,
-                                executionContext: ExecutionContext,
                                 implicit val environment: play.api.Environment,
                                 @Named("appDAO") dao: DAO)
   extends Controller with I18nSupport {
@@ -35,11 +35,13 @@ class HomeController @Inject()(
       _ => Future.successful(BadRequest(s"Query shouldn't be empty!")),
       queryForm => {
         //todo get result
-        Future.successful(Ok(views.html.query(queryForm.queryString)))
+        val data = for {
+          res1 <- dao.findAirportsByCountryCode(queryForm.queryString)
+          res2 <- dao.findAirportsByCountryName(queryForm.queryString)
+        } yield Ok(views.html.query(queryForm.queryString, res1 ++ res2))
+        data
       }
     )
-
-
   }
 
   /**
