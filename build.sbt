@@ -18,16 +18,10 @@ libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.0"
 libraryDependencies += "com.adrianhurt" %% "play-bootstrap" % "1.1-P25-B3"
 
 lazy val akkaVersion = "2.4.11"
-libraryDependencies += "com.typesafe.akka" %% "akka-http-core" % akkaVersion
-libraryDependencies += "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion
+//libraryDependencies += "com.typesafe.akka" %% "akka-http-core" % akkaVersion
+//libraryDependencies += "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
 
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 libraryDependencies += "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test
-
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "org.mystic.controllers._"
-
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "org.mystic.binders._"

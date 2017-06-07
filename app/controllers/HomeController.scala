@@ -34,7 +34,6 @@ class HomeController @Inject()(
     QueryForm.form.bindFromRequest.fold(
       _ => Future.successful(BadRequest(s"Query shouldn't be empty!")),
       queryForm => {
-        //todo get result
         val data = for {
           res1 <- dao.findAirportsByCountryCode(queryForm.queryString)
           res2 <- dao.findAirportsByCountryName(queryForm.queryString)
@@ -51,9 +50,15 @@ class HomeController @Inject()(
     *
     * Bonus: Print the top 10 most common runway identifications (indicated in "le_ident" column)
     */
-  def reports: Action[AnyContent] = Action { implicit request =>
-    // todo get result
-    Ok(views.html.reports())
+  def reports: Action[AnyContent] = Action.async { implicit request =>
+    val data = for {
+      countriesSortedByAirports <- dao.allCountriesSortedByNumberOfAirports()
+      typeOfSurfacesPerCountry <- dao.typeOfSurfacesPerCountry()
+      top10MostCommonIdentifications <- dao.allRunaways()
+    } yield Ok(views.html.reports(countriesSortedByAirports.take(10), countriesSortedByAirports.reverse.take(10),
+      typeOfSurfacesPerCountry,
+      top10MostCommonIdentifications.groupBy(_.leIdent).map(x => (x._1, x._2.length)).toList.sortBy(_._2).map(x => x._1)))
+    data
   }
 
 }
