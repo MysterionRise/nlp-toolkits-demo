@@ -9,7 +9,7 @@ import play.api.mvc._
 import forms.QueryForm
 import play.api.i18n.{I18nSupport, MessagesApi}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
