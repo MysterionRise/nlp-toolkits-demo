@@ -35,9 +35,8 @@ class HomeController @Inject()(
       _ => Future.successful(BadRequest(s"Query shouldn't be empty!")),
       queryForm => {
         val data = for {
-          res1 <- dao.findAirportsByCountryCode(queryForm.queryString)
-          res2 <- dao.findAirportsByCountryName(queryForm.queryString)
-        } yield Ok(views.html.query(queryForm.queryString, res1 ++ res2))
+          res1 <- dao.findAirportsByName(queryForm.queryString)
+        } yield Ok(views.html.query(queryForm.queryString, res1))
         data
       }
     )

@@ -3,6 +3,20 @@
 
 @main("Welcome to Airport Dangerzone - Leading source of your airport requests") {
 
-    <h2>@query</h2>
-    
+    <h2>You're looking for: @query</h2>
+
+    <p>Found: @queryResults.size</p>
+
+    <table class="table table-striped table-hover ">
+    @queryResults.map { f =>
+        <tr>
+            <td>@f._1.id</td>
+            <td>@f._1.ident</td>
+            <td>@f._1.name</td>
+            <td>@f._1.isoCountry</td>
+        </tr>
+
+    }
+    </table>
+
 }

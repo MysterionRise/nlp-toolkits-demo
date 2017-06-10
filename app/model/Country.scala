@@ -8,6 +8,6 @@ package model
   * "wikipedia_link" - link
   * "keywords" - string separated by comma
   */
-case class Country(id: Int, code: String, name: String, continent: String, wikipediaLink: String, keywords: String) {
+case class Country(id: Int, code: String, name: String, continent: String, wikipediaLink: String, keywords: List[String]) {
 
 }

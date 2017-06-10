@@ -6,4 +6,19 @@
 
   <h2>Reports will be there</h2>
 
+  <h3>10 countries with highest number of airports (with count) and countries with lowest number of airports.</h3>
+
+  <h3>Type of runways (as indicated in "surface" column) per country</h3>
+
+  <h3>top 10 most common runway identifications (indicated in "le_ident" column)
+
+      <table class="table table-striped table-hover ">
+      @top10Identifications.map { ident =>
+        <tr>
+            <td>ident</td>
+        </tr>
+      }
+      </table>
+
+
 }

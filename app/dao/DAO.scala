@@ -12,9 +12,7 @@ trait DAO {
 
   def allRunaways(): Future[List[Runaway]]
 
-  def findAirportsByCountryCode(countryCode: String): Future[List[(Airport, List[Runaway])]]
-
-  def findAirportsByCountryName(countryName: String): Future[List[(Airport, List[Runaway])]]
+  def findAirportsByName(countryCode: String): Future[List[(Airport, List[Runaway])]]
 
   def allCountriesSortedByNumberOfAirports(): Future[List[(Country, Int)]]
 
