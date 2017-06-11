@@ -54,7 +54,7 @@ class HomeController @Inject()(
       countriesSortedByAirports <- dao.allCountriesSortedByNumberOfAirports()
       typeOfSurfacesPerCountry <- dao.typeOfSurfacesPerCountry()
       top10MostCommonIdentifications <- dao.topIdentifications()
-    } yield Ok(views.html.reports(countriesSortedByAirports.reverse.take(10), countriesSortedByAirports.take(10),
+    } yield Ok(views.html.reports(countriesSortedByAirports.take(10), countriesSortedByAirports.reverse.take(10),
       typeOfSurfacesPerCountry,
       top10MostCommonIdentifications))
   }

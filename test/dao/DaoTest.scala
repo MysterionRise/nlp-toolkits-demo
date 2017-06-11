@@ -1,9 +1,6 @@
 package dao
 
-import controllers.HomeController
 import org.scalatestplus.play.{OneAppPerTest, PlaySpec}
-import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsString, contentType, route, status}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -41,6 +38,18 @@ class DaoTest extends PlaySpec with OneAppPerTest {
       val res1 = Await.result(csvDAO.findAirportsByName("netherlands"), Duration.create(10, scala.concurrent.duration.SECONDS))
       val res2 = Await.result(csvDAO.findAirportsByName("NETHERLANDS"), Duration.create(10, scala.concurrent.duration.SECONDS))
       res1.length mustBe res2.length
+    }
+
+    "number of airports for top-3 countries" in {
+      val csvDAO = new CsvDAO
+      val res = Await.result(csvDAO.allCountriesSortedByNumberOfAirports(), Duration.create(10, scala.concurrent.duration.SECONDS))
+      res.length mustBe 247
+      res.apply(0)._1.code mustBe "US"
+      res.apply(0)._2 mustBe 21501
+      res.apply(1)._1.code mustBe "BR"
+      res.apply(1)._2 mustBe 3839
+      res.apply(2)._1.code mustBe "CA"
+      res.apply(2)._2 mustBe 2454
     }
   }
 

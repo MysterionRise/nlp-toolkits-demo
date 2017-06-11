@@ -88,7 +88,7 @@ class CsvDAO extends DAO {
     val res = for {
       country <- countries
     } yield (country, airports.filter(_.isoCountry == country.code).length)
-    Future.successful(res.sortBy(_._2))
+    Future.successful(res.sortBy(-_._2))
   }
 
   override def typeOfSurfacesPerCountry(): Future[List[(Country, List[String])]] = {
