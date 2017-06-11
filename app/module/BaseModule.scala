@@ -1,7 +1,7 @@
 package module
 
 import com.google.inject.AbstractModule
-import dao.{CsvDAO, DAO}
+import dao.{CachingDAO, CsvDAO, DAO}
 import net.codingwell.scalaguice.ScalaModule
 
 class BaseModule extends AbstractModule with ScalaModule {
@@ -11,6 +11,7 @@ class BaseModule extends AbstractModule with ScalaModule {
     */
   def configure(): Unit = {
     bind[DAO].annotatedWithName("appDAO").to[CsvDAO]
+    bind[DAO].annotatedWithName("cachedDAO").to[CachingDAO]
   }
 
 }

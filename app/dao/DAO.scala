@@ -18,4 +18,6 @@ trait DAO {
 
   def typeOfSurfacesPerCountry(): Future[List[(Country, List[String])]]
 
+  def topIdentifications(): Future[List[(String, Int)]]
+
 }

@@ -18,7 +18,7 @@ class HomeController @Inject()(
                                 implicit val actorSystem: ActorSystem,
                                 mat: Materializer,
                                 implicit val environment: play.api.Environment,
-                                @Named("appDAO") dao: DAO)
+                                @Named("cachedDAO") dao: DAO)
   extends Controller with I18nSupport {
 
   def index = Action { implicit request =>
@@ -50,14 +50,13 @@ class HomeController @Inject()(
     * Bonus: Print the top 10 most common runway identifications (indicated in "le_ident" column)
     */
   def reports: Action[AnyContent] = Action.async { implicit request =>
-    val data = for {
+    for {
       countriesSortedByAirports <- dao.allCountriesSortedByNumberOfAirports()
       typeOfSurfacesPerCountry <- dao.typeOfSurfacesPerCountry()
-      top10MostCommonIdentifications <- dao.allRunaways()
-    } yield Ok(views.html.reports(countriesSortedByAirports.take(10), countriesSortedByAirports.reverse.take(10),
+      top10MostCommonIdentifications <- dao.topIdentifications()
+    } yield Ok(views.html.reports(countriesSortedByAirports.reverse.take(10), countriesSortedByAirports.take(10),
       typeOfSurfacesPerCountry,
-      top10MostCommonIdentifications.groupBy(_.leIdent).map(x => (x._1, x._2.length)).toList.sortBy(_._2).map(x => x._1)))
-    data
+      top10MostCommonIdentifications))
   }
 
 }

@@ -5,13 +5,13 @@ import com.github.tototoshi.csv._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.Source
+import play.Play
 
 class CsvDAO extends DAO {
 
-  lazy val airports = CSVReader.open(Source.fromFile("C:\\Development\\projects\\airport-dangerzone\\public\\data\\airports.csv", "UTF-8")).all().drop(1)
-  lazy val countries = CSVReader.open(Source.fromFile("C:\\Development\\projects\\airport-dangerzone\\public\\data\\countries.csv", "UTF-8")).all().drop(1)
-  lazy val runways = CSVReader.open(Source.fromFile("C:\\Development\\projects\\airport-dangerzone\\public\\data\\runways.csv", "UTF-8")).all().drop(1)
+  private lazy val airports = CSVReader.open(Play.application().getFile("conf\\data\\airports.csv"), "UTF-8").all().drop(1).map(airport => createAirportFromList(airport))
+  private lazy val countries = CSVReader.open(Play.application().getFile("conf\\data\\countries.csv"), "UTF-8").all().drop(1).map(country => createCountryFromList(country))
+  private lazy val runways = CSVReader.open(Play.application().getFile("conf\\data\\runways.csv"), "UTF-8").all().drop(1).map(runway => createRunwayFromList(runway))
 
   private def createAirportFromList(params: List[String]): Airport = {
     params match {
@@ -60,45 +60,46 @@ class CsvDAO extends DAO {
     }
   }
 
-  override def allAirports(): Future[List[Airport]] = Future.successful(airports.map(airport => createAirportFromList(airport)))
+  override def allAirports(): Future[List[Airport]] = Future.successful(airports)
 
-  override def allCountries(): Future[List[Country]] = Future.successful(countries.map(country => createCountryFromList(country)))
+  override def allCountries(): Future[List[Country]] = Future.successful(countries)
 
-  override def allRunaways(): Future[List[Runaway]] = Future.successful(runways.map(runway => createRunwayFromList(runway)))
+  override def allRunaways(): Future[List[Runaway]] = Future.successful(runways)
 
   override def findAirportsByName(query: String): Future[List[(Airport, List[Runaway])]] = {
-    for {
-      q <- findCountryCodeByCountryName(query)
-    } yield findAirportsByListOfCountryCodes(q)
+    Future.successful(findCountryCodeByCountryName(query).map(code => findAirportByName(code)).flatten)
   }
 
   private def findAirportByName(name: String): List[(Airport, List[Runaway])] = {
-    val data = for {
-      airports <- allAirports()
-      runways <- allRunaways()
-    } yield (airports.filter(airport => airport.isoCountry.equalsIgnoreCase(name) || airport.isoCountry.contains(name)), runways)
     for {
-      d <- data
-    } yield (d._1.map(a => (a, d._2.filter(_.airportRef == a.id))))
+      airport <- airports
+      if (airport.isoCountry.equalsIgnoreCase(name) || airport.isoCountry.toLowerCase.contains(name.toLowerCase))
+    } yield (airport, runways.filter(_.airportRef == airport.id))
   }
 
-  private def findAirportsByListOfCountryCodes(countryCodes: List[String]): List[(Airport, List[Runaway])] = {
-    val x = countryCodes.foldLeft[List[(Airport, List[Runaway])]](List())((list, cc) => list ++ findAirportByName(cc))
-
+  private def findCountryCodeByCountryName(name: String): List[String] = {
+    countries.map(c => (c.code, c.name)).toSet.filter(c =>
+      c._2.toLowerCase.contains(name.toLowerCase()) ||
+        c._1.equalsIgnoreCase(name) ||
+        c._1.toLowerCase.contains((name))).map(_._1).toList
   }
 
-  private def findCountryCodeByCountryName(name: String): Future[List[String]] = {
-    val countries = for {
-      country <- allCountries()
-    } yield (country.filter(
-      c => c.name.toLowerCase.contains(name.toLowerCase()) ||
-        c.code.equalsIgnoreCase(name) ||
-        c.code.toLowerCase.contains((name))
-    ).map(c => c.code))
-    countries
+  override def allCountriesSortedByNumberOfAirports(): Future[List[(Country, Int)]] = {
+    val res = for {
+      country <- countries
+    } yield (country, airports.filter(_.isoCountry == country.code).length)
+    Future.successful(res.sortBy(_._2))
   }
 
-  override def allCountriesSortedByNumberOfAirports(): Future[List[(Country, Int)]] = ???
+  override def typeOfSurfacesPerCountry(): Future[List[(Country, List[String])]] = {
+    val res = for {
+      country <- countries
+      a = airports.filter(_.isoCountry == country.code).map(_.id).toSet
+    } yield (country, runways.filter(r => a.contains(r.airportRef)).map(r => r.surface).filterNot(_.isEmpty).toSet.toList)
+    Future.successful(res)
+  }
 
-  override def typeOfSurfacesPerCountry(): Future[List[(Country, List[String])]] = ???
+  override def topIdentifications(): Future[List[(String, Int)]] = {
+    Future.successful(runways.groupBy(_.leIdent).map(x => (x._1, x._2.length)).toList.sortBy(-_._2).map(x => (x._1, x._2)).take(10))
+  }
 }
