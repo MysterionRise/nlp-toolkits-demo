@@ -7,6 +7,7 @@ import akka.stream.Materializer
 import dao.DAO
 import play.api.mvc._
 import forms.QueryForm
+import model.Country
 import play.api.i18n.{I18nSupport, MessagesApi}
 
 import scala.concurrent.Future
@@ -50,10 +51,13 @@ class HomeController @Inject()(
     * Bonus: Print the top 10 most common runway identifications (indicated in "le_ident" column)
     */
   def reports: Action[AnyContent] = Action.async { implicit request =>
+    val eventualTuples = dao.allCountriesSortedByNumberOfAirports()
+    val eventualTuples1 = dao.typeOfSurfacesPerCountry()
+    val eventualTuples2 = dao.topIdentifications()
     for {
-      countriesSortedByAirports <- dao.allCountriesSortedByNumberOfAirports()
-      typeOfSurfacesPerCountry <- dao.typeOfSurfacesPerCountry()
-      top10MostCommonIdentifications <- dao.topIdentifications()
+      countriesSortedByAirports <- eventualTuples
+      typeOfSurfacesPerCountry <- eventualTuples1
+      top10MostCommonIdentifications <- eventualTuples2
     } yield Ok(views.html.reports(countriesSortedByAirports.take(10), countriesSortedByAirports.reverse.take(10),
       typeOfSurfacesPerCountry,
       top10MostCommonIdentifications))
