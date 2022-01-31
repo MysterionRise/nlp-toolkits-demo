@@ -1,11 +1,6 @@
-*.class
-*.log
+# Ignore Gradle project-specific cache directory
+.gradle
 
-logs
-target
-/.idea
-/.idea_modules
-/.classpath
-/.project
-/.settings
-/RUNNING_PID
+# Ignore Gradle build output directory
+build
+.idea
